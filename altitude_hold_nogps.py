@@ -92,7 +92,7 @@ def arm_and_takeoff_nogps(aTargetAltitude):
         time.sleep(0.2)
 
 def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
-                         yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False):
+                         yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = True):
     """
     use_yaw_rate: the yaw can be controlled using yaw_angle OR yaw_rate.
                   When one is used, the other is ignored by Ardupilot.
@@ -105,6 +105,10 @@ def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
     
     if not use_yaw_rate and yaw_angle is None:
         yaw_angle = vehicle.attitude.yaw
+
+    if yaw_angle is None:
+        yaw_angle = 0.0
+    
     # Thrust >  0.5: Ascend
     # Thrust == 0.5: Hold the altitude
     # Thrust <  0.5: Descend
@@ -122,7 +126,7 @@ def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
     vehicle.send_mavlink(msg)
 
 def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
-                 yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False,
+                 yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = True,
                  duration = 0):
     """
     Note that from AC3.3 the message should be re-sent more often than every
@@ -133,11 +137,11 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
     """
 
     send_attitude_target(roll_angle, pitch_angle,
-                         yaw_angle, yaw_rate, False)
+                         yaw_angle, yaw_rate, use_yaw_rate)
     start = time.time()
     while time.time() - start < duration:
         send_attitude_target(roll_angle, pitch_angle,
-                             yaw_angle, yaw_rate, False)
+                             yaw_angle, yaw_rate, use_yaw_rate)
         time.sleep(0.01)
     # Reset attitude, or it will persist for 1s more due to the timeout
     send_attitude_target(0, 0,
